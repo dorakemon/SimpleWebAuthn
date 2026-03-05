@@ -52,6 +52,13 @@ export function parseAuthenticatorData(
     const credIDLen = dataView.getUint16(pointer);
     pointer += 2;
 
+    // https://www.w3.org/TR/webauthn-3/#credentialid — max 1023 bytes
+    if (credIDLen > 1023) {
+      throw new Error(
+        `Credential ID was ${credIDLen} bytes, expected at most 1023 bytes`,
+      );
+    }
+
     credentialID = authData.slice(pointer, pointer += credIDLen);
 
     /**

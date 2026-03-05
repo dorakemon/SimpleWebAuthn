@@ -1,4 +1,4 @@
-import { assertEquals } from '@std/assert';
+import { assertEquals, assertThrows } from '@std/assert';
 
 import { parseAuthenticatorData } from './parseAuthenticatorData.ts';
 import { AuthenticationExtensionsAuthenticatorOutputs } from './decodeAuthenticatorExtensions.ts';
@@ -87,4 +87,15 @@ Deno.test('should parse malformed authenticator data from Firefox 117', () => {
   // Let's make sure we didn't fundamentally change authData as it would break signature
   // verification if we did.
   assertEquals(authDataBadKtyHex, authDataAfterHex);
+});
+
+Deno.test('should reject credential ID exceeding 1023 bytes', () => {
+  const authData = authDataWithAT.slice();
+  new DataView(authData.buffer).setUint16(53, 2048, false);
+
+  assertThrows(
+    () => parseAuthenticatorData(authData),
+    Error,
+    'expected at most 1023 bytes',
+  );
 });
